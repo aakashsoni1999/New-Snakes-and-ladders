@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Page Title</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+    </head>
+    <body style="background-color: bisque">
+        <img id="image" height="600" width="850"src="board.png" style="display:none">
+        <img id="im1" src="gotti1.png" style="display:none">
+        <img id="im2" src="gotti2.png" style="display:none">
+        <img id="im3" src="gotti3.png" style="display:none">
+        <img id="im4" src="gotti4.png" style="display:none">
+        <img id="im5" src="gotti5.png" style="display:none">
+        <img id="im6" src="gotti6.png" style="display:none">
+
+        <canvas id="canvas" height="620" width="870" style="border:2px solid #000000"></canvas>
+                <p>Players    :<input type="number" id="txt" value="0">
+                <button id="btn2" type="button" class="btn btn-danger" onclick="players()">Submit</button>
+                <button id="btn" type="button" class="btn btn-primary" onclick="dice()">Dice</button></p>
+
+        <script>
+            let socket=io();
+
+var x=0;
+var tempx=0;
+function players()
+{
+    tempx=document.getElementById("txt").value;
+    socket.emit('send_p',{player:tempx})
+}
+
+
+ socket.on('recv_p',function(data){
+        x=data.player;
+        document.getElementById("txt").value=x;
+    })
+
+var rn=0;
+
+function dice(){
+    var temprn=Math.floor((Math.random()*6)+1);
+    socket.emit('send_msg',{message:temprn});
+}
+
+socket.on('recv_msg',function(data){
+        rn=data.message;
+        can();
+    });
+
+function can(){
+    if(x==1) can1();
+    else if(x==2) can2();
+    else if(x==3) can3();
+    else if(x==4) can4();
+    else if(x==5) can5();
+    else if(x==6) can6();
+}
+
+
+var x1=37;
+var y1=565;
+var inc=62;
+var pos=new Array(100);
+var num=new Array(100);
+for(var j=0;j<100;++j){
+pos[j]=new Array(2);
+num[j]=0;}
+for(var i=0;i<100;i+=1)
+{
+    pos[i][0]=x1;
+    pos[i][1]=y1;
+    x1+=inc;
+    if((i+1)%10===0) { y1-=60;  x1-=inc; inc=(-1*inc);  }
+}
+num[1]=17;  num[10]=30;  num[11]=27; 
+num[21]=39;  num[35]=61; num[45]=54; 
+num[40]=58;  num[69]=93; num[76]=83;    
+num[84]=96; 
+
+num[20]=14; num[22]=5; num[28]=14; 
+num[34]=17; num[46]=31; num[51]=37; 
+num[70]=33; num[81]=58; num[94]=77; 
+num[98]=78; 
+
+var c=document.getElementById("canvas");
+var ctx=c.getContext("2d");
+var img=document.getElementById("image");
+var img1=document.getElementById("im1");
+var img2=document.getElementById("im2");
+var img3=document.getElementById("im3");
+var img4=document.getElementById("im4");
+var img5=document.getElementById("im5");
+var img6=document.getElementById("im6");
+
+
+var number1=0;
+ctx.fillStyle="red";
+ctx.font="50px Aerial";
+ctx.fillText(""+rn,730,300);
+function can1(){
+    if(number1+rn<=100)
+    number1+=rn;
+    draw1();
+}
+function draw1(){
+if(number1!=0)
+if(num[number1-1]!=0)
+number1=num[number1-1]+1;
+ctx.drawImage(img,10,10);
+ctx.drawImage(img1,pos[number1-1][0],pos[number1-1][1]);
+ctx.font="50px Aerial";
+ctx.fillStyle="red'";
+ctx.fillText(""+rn,730,300);
+if(number1==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",700,460);
+}
+}
+
+
+var c2=0;
+var number2=0;
+var number3=0;
+var rn=0;
+function can2(){
+    c2+=1;
+    if(c2%2==1) 
+    {
+        if(number2+rn<=100) number2+=rn; 
+       if(number2!=0)
+    if(num[number2-1]!=0) number2=num[number2-1]+1;
+    if(number3==number2&&number3!=100) number3=0; }
+    else if(c2%2==0) {if(number3+rn<=100) number3+=rn;
+        if(number3!=0)
+        if(num[number3-1]!=0)
+        number3=num[number3-1]+1;
+    if(number3==number2&&number2!=100) number2=0; }
+    draw2();
+}
+function draw2(){
+ctx.drawImage(img,10,10);
+if(number2!=0)
+ctx.drawImage(img1,pos[number2-1][0],pos[number2-1][1]);
+if(number3!=0)
+ctx.drawImage(img2,pos[number3-1][0],pos[number3-1][1]);
+ctx.font="50px Aerial";
+if(c2%2==1) ctx.fillStyle='orange';
+else if(c2%2==0) ctx.fillStyle='red';
+ctx.fillText(""+rn,730,300);
+if(number2==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",705,460);
+}
+if(number3==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",775,460);
+}
+}
+
+
+var c3=0;
+var number4=0;
+var number5=0;
+var number6=0;
+var rn=0;
+function can3(){
+    c3+=1;
+    if(c3%3==1) { if(number4+rn<=100) number4+=rn;
+        if(number4!=0)
+if(num[number4-1]!=0)
+number4=num[number4-1]+1;
+     if(number4==number5&&number5!=100) number5=0; if(number4==number6&&number6!=100) number6=0; }
+    else if(c3%3==2) { if(number5+rn<=100) number5+=rn; 
+        if(number5!=0)
+if(num[number5-1]!=0)
+number5=num[number5-1]+1;
+    if(number4==number5&&number4!=100) number4=0; if(number5==number6&&number6!=100) number6=0; }
+    else if(c3%3==0) { if(number6+rn<=100) number6+=rn; 
+        if(number6!=0)
+if(num[number6-1]!=0)
+number6=num[number6-1]+1;
+    if(number4==number6&&number4!=100) number4=0; if(number5==number6&&number5!=100) number5=0; }
+    draw3();
+}
+function draw3() {
+ctx.drawImage(img,10,10);
+if(number4!=0)
+ctx.drawImage(img1,pos[number4-1][0],pos[number4-1][1]);
+if(number5!=0)
+ctx.drawImage(img2,pos[number5-1][0],pos[number5-1][1]);
+if(number6!=0)
+ctx.drawImage(img3,pos[number6-1][0],pos[number6-1][1]);
+ctx.font="50px Aerial";
+if(c3%3==1) ctx.fillStyle="orange";
+    else if(c3%3==2) ctx.fillStyle="yellow";
+    else if(c3%3==0) ctx.fillStyle="red";
+ctx.fillText(""+rn,730,300);
+if(number4==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",705,460);
+}
+if(number5==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",775,460);
+}
+if(number6==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",705,520);
+}
+}
+
+
+
+var c4=0;
+var number7=0;
+var number8=0;
+var number9=0;
+var number10=0;
+var rn=0;
+function can4(){
+    c4+=1;
+    if(c4%4==1) { if(number7+rn<=100) number7+=rn; 
+        if(number7!=0)
+if(num[number7-1]!=0)
+number7=num[number7-1]+1;
+    if(number7==number8&&number8!=100) number8=0; if(number7==number9&&number9!=100) number9=0;
+        if(number7==number10&&number10!=100) number10=0;}
+    else if(c4%4==2) {if(number8+rn<=100) number8+=rn;
+        if(number8!=0)
+if(num[number8-1]!=0)
+number8=num[number8-1]+1;
+     if(number8==number7&&number7!=100) number7=0; if(number8==number9&&number9!=100) number9=0;
+        if(number8==number10&&number10!=100) number10=0;}
+    else if(c4%4==3) { if(number9+rn<=100) number9+=rn;
+        if(number9!=0)
+if(num[number9-1]!=0)
+number9=num[number9-1]+1;
+     if(number7==number8&&number8!=100) number8=0; if(number7==number9&&number9!=100) number9=0;
+        if(number7==number10&&number10!=100) number10=0;}
+    else if(c4%4==0) { if(number10+rn<=100) number10+=rn; 
+        if(number10!=0)
+if(num[number10-1]!=0)
+number10=num[number10-1]+1;
+    if(number10==number7&&number7!=100) number7=0; if(number10==number8&&number8!=100) number8=0;
+        if(number10==number9&&number9!=100) number9=0;}
+    draw4();
+}
+function draw4(){
+ctx.drawImage(img,10,10);
+if(number7!=0)
+ctx.drawImage(img1,pos[number7-1][0],pos[number7-1][1]);
+if(number8!=0)
+ctx.drawImage(img2,pos[number8-1][0],pos[number8-1][1]);
+if(number9!=0)
+ctx.drawImage(img3,pos[number9-1][0],pos[number9-1][1]);
+if(number10!=0)
+ctx.drawImage(img4,pos[number10-1][0],pos[number10-1][1]);
+ctx.font="50px Aerial";
+if(c4%4==1) ctx.fillStyle="orange";
+    else if(c4%4==2) ctx.fillStyle="yellow";
+    else if(c4%4==3) ctx.fillStyle="green";
+    else if(c4%4==0) ctx.fillStyle="red";
+ctx.fillText(""+rn,730,300);
+if(number7==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",705,460);
+}
+if(number8==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",775,460);
+}
+if(number9==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",705,520);
+}
+if(number10==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",775,520);
+}
+}
+
+
+var c5=0;
+var number11=0;
+var number12=0;
+var number13=0;
+var number14=0;
+var number15=0;
+var rn=0;
+function can5(){
+    c5+=1;
+    if(c5%5==1) { if(number11+rn<=100) number11+=rn; 
+        if(number11!=0)
+if(num[number11-1]!=0)
+number11=num[number11-1]+1;
+    if(number11==number12&&number12!=100) number12=0; if(number11==number13&&number13!=100) number13=0; 
+    if(number11==number14&&number14!=100) number14=0; if(number11==number15&&number15!=100) number15=0; }
+    else if(c5%5==2) { if(number12+rn<=100) number12+=rn; 
+        if(number12!=0)
+if(num[number12-1]!=0)
+number12=num[number12-1]+1;
+    if(number12==number11&&number11!=100) number11=0; if(number12==number13&&number13!=100) number13=0; 
+    if(number12==number14&&number14!=100) number14=0; if(number12==number15&&number15!=100) number15=0; }
+    else if(c5%5==3) { if(number13+rn<=100) number13+=rn;
+        if(number13!=0)
+if(num[number13-1]!=0)
+number13=num[number13-1]+1;
+     if(number13==number11&&number11!=100) number11=0; if(number13==number12&&number12!=100) number12=0; 
+    if(number13==number14&&number14!=100) number14=0; if(number13==number15&&number15!=100) number15=0; }
+    else if(c5%5==4) { if(number14+rn<=100) number14+=rn; 
+        if(number14!=0)
+if(num[number14-1]!=0)
+number14=num[number14-1]+1;
+    if(number14==number11&&number11!=100) number11=0; if(number14==number12&&number12!=100) number12=0; 
+    if(number14==number13&&number13!=100) number13=0; if(number14==number15&&number15!=100) number15=0; }
+    else if(c5%5==0) { if(number15+rn<=100) number15+=rn;
+        if(number15!=0)
+if(num[number15-1]!=0)
+number15=num[number15-1]+1;
+     if(number15==number11&&number11!=100) number11=0; if(number15==number12&&number12!=100) number12=0; 
+    if(number15==number13&&number13!=100) number13=0; if(number15==number14&&number14!=100) number14=0; }
+    draw5();
+}
+function draw5(){
+ctx.drawImage(img,10,10);
+if(number11!=0)
+ctx.drawImage(img1,pos[number11-1][0],pos[number11-1][1]);
+if(number12!=0)
+ctx.drawImage(img2,pos[number12-1][0],pos[number12-1][1]);
+if(number13!=0)
+ctx.drawImage(img3,pos[number13-1][0],pos[number13-1][1]);
+if(number14!=0)
+ctx.drawImage(img4,pos[number14-1][0],pos[number14-1][1]);
+if(number15!=0)
+ctx.drawImage(img5,pos[number15-1][0],pos[number15-1][1]);
+ctx.font="50px Aerial";
+if(c5%5==1) ctx.fillStyle="orange";
+    else if(c5%5==2) ctx.fillStyle="yellow";
+    else if(c5%5==3) ctx.fillStyle="green";
+    else if(c5%5==4) ctx.fillStyle="blue";
+    else if(c5%5==0) ctx.fillStyle="red";
+ctx.fillText(""+rn,730,300);
+if(number11==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",705,460);
+}
+if(number12==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",775,460);
+}
+if(number13==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",705,520);
+}
+if(number14==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",775,520);
+}
+if(number15==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",705,590);
+}
+}
+
+
+var c6=0;
+var number16=0;
+var number17=0;
+var number18=0;
+var number19=0;
+var number20=0;
+var number21=0;
+var rn=0;
+function can6(){
+    c6+=1;
+    if(c6%6==1) { if(number16+rn<=100) number16+=rn;
+        if(number16!=0)
+if(num[number16-1]!=0)
+number16=num[number16-1]+1;
+     if(number16==number17&&number17!=100) number17=0; if(number16==number18&&number18!=100) number18=0;
+        if(number16==number19&&number19!=100) number19=0; if(number16==number20&&number20!=100) number20=0; if(number16==number21&&number21!=100) number21=0; }
+    else if(c6%6==2) { if(number17+rn<=100) number17+=rn; 
+        if(number17!=0)
+if(num[number17-1]!=0)
+number17=num[number17-1]+1;
+    if(number17==number16&&number16!=100) number16=0; if(number17==number18&&number18!=100) number18=0;
+        if(number17==number19&&number19!=100) number19=0; if(number17==number20&&number20!=100) number20=0; if(number17==number21&&number21!=100) number21=0; }
+    else if(c6%6==3) { if(number18+rn<=100) number18+=rn;
+        if(number18!=0)
+if(num[number18-1]!=0)
+number18=num[number18-1]+1;
+     if(number18==number16&&number16!=100) number16=0; if(number18==number17&&number17!=100) number17=0;
+        if(number18==number19&&number19!=100) number19=0; if(number18==number20&&number20!=100) number20=0; if(number18==number21&&number21!=100) number21=0; }
+    else if(c6%6==4) { if(number19+rn<=100) number19+=rn; 
+        if(number19!=0)
+if(num[number19-1]!=0)
+number19=num[number19-1]+1;
+    if(number19==number16&&number16!=100) number16=0; if(number19==number17&&number17!=100) number17=0;
+        if(number19==number18&&number18!=100) number18=0; if(number19==number20&&number20!=100) number20=0; if(number19==number21&&number21!=100) number21=0; }
+    else if(c6%6==5) { if(number20+rn<=100) number20+=rn;
+        if(number20!=0)
+if(num[number20-1]!=0)
+number20=num[number20-1]+1;
+     if(number20==number16&&number16!=100) number16=0; if(number20==number17&&number17!=100) number17=0;
+        if(number20==number18&&number18!=100) number18=0; if(number20==number19&&number19!=100) number19=0; if(number20==number21&&number21!=100) number21=0; }
+    else if(c6%6==0) {if(number21+rn<=100) number21+=rn;
+        if(number21!=0)
+if(num[number21-1]!=0)
+number21=num[number21-1]+1;
+     if(number21==number16&&number16!=100) number16=0; if(number21==number17&&number17!=100) number17=0;
+        if(number21==number18&&number18!=100) number18=0; if(number21==number19&&number19!=100) number19=0; if(number21==number20&&number20!=100) number20=0; }
+    draw6();
+}
+function draw6(){
+ctx.drawImage(img,10,10);
+if(number16!=0)
+ctx.drawImage(img1,pos[number16-1][0],pos[number16-1][1]);
+if(number17!=0)
+ctx.drawImage(img2,pos[number17-1][0],pos[number17-1][1]);
+if(number18!=0)
+ctx.drawImage(img3,pos[number18-1][0],pos[number18-1][1]);
+if(number19!=0)
+ctx.drawImage(img4,pos[number19-1][0],pos[number19-1][1]);
+if(number20!=0)
+ctx.drawImage(img5,pos[number20-1][0],pos[number20-1][1]);
+if(number21!=0)
+ctx.drawImage(img6,pos[number21-1][0],pos[number21-1][1]);
+ctx.font="50px Aerial";
+if(c6%6==1) ctx.fillStyle='orange';
+    else if(c6%6==2) ctx.fillStyle='yellow';
+    else if(c6%6==3) ctx.fillStyle='green';
+    else if(c6%6==4) ctx.fillStyle='blue';
+    else if(c6%6==5) ctx.fillStyle='violet';
+    else if(c6%6==0) ctx.fillStyle='red';
+ctx.fillText(""+rn,730,300);
+if(number16==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",705,460);
+}
+if(number17==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",775,460);
+}
+if(number18==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",705,520);
+}
+if(number19==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",775,520);
+}
+if(number20==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",705,580);
+}
+if(number21==100){
+    ctx.font="20px Aerial";
+    ctx.fillStyle="black";
+    ctx.fillText("Win",775,590);
+}
+ }
+        </script>
+    </body>
+</html>
